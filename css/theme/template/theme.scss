@@ -169,7 +169,7 @@
 .reveal pre {
 	display: block;
 	position: relative;
-	width: 90%;
+	width: 120%;
 	margin: var(--r-block-margin) auto;
 
 	text-align: left;
@@ -190,9 +190,9 @@
 
 .reveal pre code {
 	display: block;
-	padding: 5px;
+	padding: 50px;
 	overflow: auto;
-	max-height: 400px;
+	max-height: 600px;
 	word-wrap: normal;
 }
 
