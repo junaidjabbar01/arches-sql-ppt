@@ -16,8 +16,8 @@ section.has-light-background, section.has-light-background h1, section.has-light
   --r-main-font: Source Sans Pro, Helvetica, sans-serif;
   --r-main-font-size: 42px;
   --r-main-color: #fff;
-  --r-block-margin: 20px;
-  --r-heading-margin: 0 0 20px 0;
+  --r-block-margin: 10px;
+  --r-heading-margin: 0 0 10px 0;
   --r-heading-font: Source Sans Pro, Helvetica, sans-serif;
   --r-heading-color: #fff;
   --r-heading-line-height: 1.2;
@@ -208,10 +208,10 @@ section.has-light-background, section.has-light-background h1, section.has-light
 .reveal pre {
   display: block;
   position: relative;
-  width: 90%;
+  width: 100%;
   margin: var(--r-block-margin) auto;
   text-align: left;
-  font-size: 0.55em;
+  font-size: 0.50em;
   font-family: var(--r-code-font);
   line-height: 1.2em;
   word-wrap: break-word;
