@@ -227,7 +227,7 @@ section.has-light-background, section.has-light-background h1, section.has-light
 .reveal pre code {
   display: block;
   padding: 5px;
-  overflow: hidden;
+  overflow: auto;
   max-height: 400px;
   word-wrap: normal;
 }
