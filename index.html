@@ -208,7 +208,7 @@ __arches_get_labels_for_concept_node (node_id, language_id)
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Arches String - PostgreSQL JSONB</h4>
 				<pre>
-			<code style="width: 1050px; margin: 0 auto; display: block; margin-left: -50px; font-size: 90%;">
+			<code style="width: 800px; margin: 0 auto; display: block; font-size: 90%;">
 				<script type="text/template">CREATE OR REPLACE FUNCTION build_lang_json(text_value TEXT, lang_code TEXT)
 RETURNS JSONB AS $$
 BEGIN
@@ -218,9 +218,12 @@ RETURN NULL;
 END IF;
 
 RETURN jsonb_build_object(
-'en', jsonb_build_object('value', CASE WHEN lang_code = 'en' THEN text_value ELSE '' END, 'direction', 'ltr'),
-'ur', jsonb_build_object('value', CASE WHEN lang_code = 'ur' THEN text_value ELSE '' END, 'direction', 'rtl'),
-'hi', jsonb_build_object('value', CASE WHEN lang_code = 'hi' THEN text_value ELSE '' END, 'direction', 'ltr')
+'en', jsonb_build_object('value', CASE WHEN lang_code = 'en' THEN text_value
+                                       ELSE '' END, 'direction', 'ltr'),
+'ur', jsonb_build_object('value', CASE WHEN lang_code = 'ur' THEN text_value
+                                       ELSE '' END, 'direction', 'rtl'),
+'hi', jsonb_build_object('value', CASE WHEN lang_code = 'hi' THEN text_value
+                                       ELSE '' END, 'direction', 'ltr')
 );
 END;
 $$ LANGUAGE plpgsql;</script>
@@ -355,7 +358,7 @@ FROM
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance List</h4>
 				<pre>
-						<code data-line-numbers="1-13|14-29|30-34|35-42" style="font-size:90%;">
+						<code data-line-numbers="1-13|14-29|30-34|35-42" style="width:700px;font-size:90%;">
 							<script type="text/template">WITH related_ids AS (
 SELECT 
 	resourceinstanceid, 
@@ -467,7 +470,7 @@ resourceinstanceid;</script>
 			showSlideNumber: 'all',
 			center: true,
 			maxHeight: 700,   // Maximum height for slides
-
+		
 
 
 			// Learn about plugins: https://revealjs.com/plugins/
