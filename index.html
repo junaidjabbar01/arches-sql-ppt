@@ -45,7 +45,7 @@
 			<section>
 				<h4 style="color:lightgreen;font-weight:bold">Challenges</h4>
 				<ul style="text-align: left;font-size:50%">
-					<li>Complex site groups with location variations</li>
+					<li>Complex site records with attribute and location variations</li>
 					<br>
 					<img src="img/Map2.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=50%
 						height=50%>
@@ -59,10 +59,10 @@
 				<h4 style="color:lightgreen;font-weight:bold">Challenges</h4>
 				<ul style="text-align: left;font-size:50%">
 					<li>Collaborative working in a GIS environment with multiple reference layers to compare attributes
-						and geometry to collate data</li>
+						and location to collate data</li>
 					<br>
-					<img src="img/qgis_form.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=75%
-						height=75%>
+					<img src="img/qgis_form.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=80%
+						height=80%>
 				</ul>
 			</section>
 
@@ -71,7 +71,7 @@
 				<ul style="text-align: left;font-size:50%">
 					<li>Nested resource model and data import</li>
 					<br>
-					<img src="img/hl_rm.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=50%
+					<img src="img/hl_rm_2.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=50%
 						height=50%>
 				</ul>
 			</section>
@@ -98,17 +98,20 @@
 
 					<ul>
 						<br>
-						<li>Install the postgres_fdw extension with CREATE EXTENSION</li>
+						<li>Install the postgres_fdw extension with <span
+								style="color:lightcoral;font-weight:bold">CREATE EXTENSION</span></li>
 						<br>
-						<li>Create a foreign server object using CREATE SERVER for each remote database, specifying
-							connection information (excluding user and password) as options.</li>
+						<li>Create a foreign server object using <span style="color:lightcoral;font-weight:bold">CREATE
+								SERVER</span> for remote database, specifying
+							connection information.</li>
 						<br>
-						<li>Create a user mapping with CREATE USER MAPPING for each database user allowed to access the
-							foreign server, specifying remote username and password.</li>
+						<li>Create a user mapping with <span style="color:lightcoral;font-weight:bold">CREATE USER
+								MAPPING</span> for database user allowed to access the
+							foreign server, specifying remote user credentials.</li>
 						<br>
-						<li>Create a foreign table using CREATE FOREIGN TABLE or IMPORT FOREIGN SCHEMA for each remote
-							table, ensuring columns match the remote table. You can use different names if the correct
-							remote names are specified as options.</li>
+						<li>Create a foreign table using <span style="color:lightcoral;font-weight:bold">IMPORT FOREIGN
+								SCHEMA</span> for each remote
+							table, ensuring columns match the remote table.</li>
 					</ul>
 				</ul>
 			</section>
@@ -139,11 +142,19 @@ AND graphid = '8d765e70-b69b-11ed-8613-efcdc71353a1';</script>
 			</section>
 
 
+			<section>
+				<h4 style="color:lightgreen;font-weight:bold">Heritage Location Schema</h4>
+				<ul style="text-align: left;font-size:50%">
+					<img src="img/r_views_2.JPG" style="display: block; margin: 0 auto;" alt="Centered Image" width=75%
+						height=75%>
+				</ul>
+			</section>
+
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Resource Model Schema - Instances</h4>
 				<li style="text-align: left;font-size:50%">Each resource model schema will have a view 'Instances'</li>
 				<pre>
-						<code style="width: 750px; margin: 0 auto; display: block; font-size: 90%;">
+						<code data-line-numbers style="width: 750px; margin: 0 auto; display: block; font-size: 90%;">
 							<script type="text/template";>INSERT INTO heritage_location.instances (resourceinstanceid, legacyid)
 SELECT uuid_value, mahsa_id
 FROM ft_hl_resources;</script>
@@ -208,7 +219,7 @@ __arches_get_labels_for_concept_node (node_id, language_id)
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Arches String - PostgreSQL JSONB</h4>
 				<pre>
-			<code style="width: 800px; margin: 0 auto; display: block; font-size: 90%;">
+			<code data-line-numbers style="width: 800px; margin: 0 auto; display: block; font-size: 90%;">
 				<script type="text/template">CREATE OR REPLACE FUNCTION build_lang_json(text_value TEXT, lang_code TEXT)
 RETURNS JSONB AS $$
 BEGIN
@@ -234,22 +245,42 @@ $$ LANGUAGE plpgsql;</script>
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold;">Import Strings</h4>
 				<pre>
-						<code style="width: 700px; margin: 0 auto; display: block; font-size: 90%;">  
+						<code data-line-numbers style="width: 700px; margin: 0 auto; display: block; font-size: 90%;">  
 							<script type="text/template">-- insert data for name branch in heritage location resource model
 INSERT INTO heritage_location.name (
 	tileid,
 	name,
 	-- name_type,
 	resourceinstanceid)
-(
-	SELECT 
+SELECT 
 	uuid_generate_v4(),
 	build_lang_json(name, 'en'),
 	resourceinstanceid 
-	FROM ft_hl_name
-);</script>
+FROM
+	 ft_hl_name;</script>
 						</code>
 					</pre>
+			</section>
+
+			<section data-auto-animate>
+				<h4 style="color:lightgreen;font-weight:bold">Import URL</h4>
+				<pre>
+						<code data-line-numbers style="width: 960px; margin: 0 auto; display: block;">
+							<script type="text/template">INSERT INTO heritage_location.external_source(
+(
+	tileid,
+	external_reference,
+	resourceinstanceid)
+)
+SELECT 
+	uuid_generate_v4(), 
+	jsonb_build_object('url', external_reference, 'url_label', 'External Source'),
+	resourceinstanceid
+FROM
+	ft_hl_external_source;
+</script>
+</code>
+</pre>
 			</section>
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Concepts</h4>
@@ -288,18 +319,119 @@ FROM ft_hl_name;
 					</pre>
 			</section>
 
-			<section>
-				<h2 style="color:lightgreen;font-weight:bold">Import Date, EDTF, URL, Geojson-feature-collection</h2>
-			</section>
+			
+
+		<!--	<section data-auto-animate>
+				<h4 style="color:lightgreen;font-weight:bold">Import Geojson-feature-collection</h4>
+				<pre>
+						<code style="width: 300px; margin: 0 auto; display: block;">
+							<script type="text/template">{
+	"en":{
+		"value":"Anbar Well",
+		"direction":"ltr"
+	}
+}
+</script>
+</code>
+</pre>
+			</section> -->
 
 
-			<section>
+			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Function for Concept-list</h4>
+				<li style="text-align: left;font-size:50%">Create schema for a particular resource model</li>
+
+				<pre>
+						<code data-line-numbers class="language-sql" data-line-numbers="1-8|9-12|13-29" style="font-size:90%;">
+							<script type="text/template">CREATE OR REPLACE FUNCTION public.__arches_get_uuids_concept_list(
+	schema_name text,
+	view_name text,
+	column_name text,
+	data_column_name text
+) 
+RETURNS uuid[] 
+AS $BODY$
+DECLARE
+	concept varchar;
+	concept_list varchar[];
+	concept_uuid text;
+	concept_list_uuids text[];
+BEGIN
+	-- Extract the list of concepts from the data column
+EXECUTE FORMAT(
+	'SELECT array_agg(trim(e)) 
+		FROM (
+			SELECT row_number() OVER () AS rn, 
+	unnest(string_to_array( '|| data_column_name || ' , '','')::text[]) e) t ',
+	data_column_name
+) INTO concept_list;
+
+	-- Process each concept if the concept list is not empty
+	IF (array_length(concept_list, 1) > 0) THEN
+		FOREACH concept IN ARRAY concept_list
+		LOOP
+			RAISE NOTICE 'Processing concept: %', concept;
+
+			-- Retrieve the UUID for each concept
+			EXECUTE FORMAT(
+				'WITH concept_value (valueid, value) AS (
+					SELECT valueid, value 
+					FROM __arches_get_labels_for_concept_node(
+						__arches_get_node_id_for_view_column(
+							%L, %L, %L
+						)
+					)
+				)
+				SELECT valueid::text 
+				FROM concept_value 
+				WHERE value = trim(%L) 
+				LIMIT 1',
+				schema_name, view_name, column_name, concept
+			) INTO concept_uuid;
+
+			-- Append the UUID to the list
+			concept_list_uuids := array_append(concept_list_uuids::text[], concept_uuid::text);
+		END LOOP;
+	END IF;
+
+	RETURN concept_list_uuids;
+END
+$BODY$
+LANGUAGE 'plpgsql' ;</script>
+						</code>
+					</pre>
 			</section>
 
-			<section>
+			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Concept-list</h4>
+				<br>
+				<li style="text-align: left;font-size:50%">Select Query</li>
+
+				<pre>
+
+						<code data-line-numbers class="language-sql" style="font-size:85%;">
+							<script type="text/template">select assessment_type,
+__arches_get_uuids_concept_list ('heritage_location','assessment_activity','assessment_type',
+'''' || replace(replace(replace(assessment_type,'{',''),'}',''),'"','')::text ||'''')
+from ft_hl_assessment_activity;</script>
+						</code>
+					</pre>
+				<li style="text-align: left;font-size:50%">Input</li>
+
+				<pre>
+						<code class="language-sql"  style="font-size:85%;">
+							<script type="text/template">{"Data Cleaning/Enhancing","Imagery Interpretation"}</script>
+						</code>
+					</pre>
+				<li style="text-align: left;font-size:50%">Output</li>
+
+				<pre>
+						<code class="language-sql" style="font-size:85%;">
+							<script type="text/template">{56753655-3780-4dea-98b2-c33b9eb1139a,8c295c0f-dc55-410a-a11b-b72b204852e7}</script>
+						</code>
+					</pre>
 			</section>
+
 
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance</h4>
@@ -334,7 +466,7 @@ SELECT
 	),
 	resourceinstanceid 
 FROM 
-	hl_assessment_activity;
+    ft_hl_assessment_activity;
 								</script>
 						</code>
 					</pre>
@@ -358,7 +490,7 @@ FROM
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance List</h4>
 				<pre>
-						<code data-line-numbers="1-13|14-29|30-34|35-42" style="width:700px;font-size:90%;">
+						<code data-line-numbers="1-13|14-29|30-34|35-42" style="font-size: 90%;">
 							<script type="text/template">WITH related_ids AS (
 SELECT 
 	resourceinstanceid, 
@@ -382,30 +514,31 @@ SELECT
 		'inverseOntologyProperty', rr.related_resource_inverse_ontology
 	) AS related_resource
 FROM
-	hl_resource_relationships rr
+	ft_hl_resource_relationships rr
 JOIN 
 	related_ids ri 
 ON 
 	rr.related_resource_id = ri.value
 )
 INSERT INTO heritage_location.related_resources (
-tileid,
-related_resources,
-resourceinstanceid
+	tileid,
+	related_resources,
+	resourceinstanceid
 )
 SELECT
-uuid_generate_v4(),
-jsonb_agg(related_resource),
-resourceinstanceid
+	uuid_generate_v4(),
+	jsonb_agg(related_resource),
+	resourceinstanceid
 FROM
-related_resources
+	related_resources
 GROUP BY
-resourceinstanceid;</script>
+	resourceinstanceid;</script>
 						</code>
 					</pre>
 			</section>
+
 			<section data-auto-animate>
-				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance</h4>
+				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance List</h4>
 				<pre>
 						<code style="width: 600px; margin: 0 auto; display: block; font-size: 90%;">
 							<script type="text/template">[
@@ -432,18 +565,36 @@ resourceinstanceid;</script>
 					</pre>
 			</section>
 
-
-
-
-
 			<section>
-				<h4 style="color:lightgreen;font-weight:bold">SQL Import - Advantages</h4>
+				<h4 style="color:lightgreen;font-weight:bold">Sample Imported Data</h4>
+				<ul style="text-align: left;font-size:50%">
+					<img src="img/arches_database.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=100%
+						height=100%>
+				</ul>
 			</section>
 
 			<section>
-				<h4 style="color:lightgreen;font-weight:bold">QGIS Plugin & Geojson URL</h4>
+				<h4 style="color:lightgreen;font-weight:bold">SQL Import</h4>
+				<ul style="text-align: left;font-size:70%">
+					<li>More control over data import</li>
+					<li>Can update, delete, insert for single branches or nodes</li>
+					<li>Faster once the SQL queries and functions are ready</li>
+					<li>Require data validation checks</li>
+					<li>Authoritative and Provisional data</li>
+				</ul>
 			</section>
 
+
+			<section>
+				<h4 style="color:lightgreen;font-weight:bold">New Features</h4>
+				<ul style="text-align: left;font-size:70%">
+					<li>GeoJSON URL, fix for basic HTTP authorization</li>
+					<li>QGIS Plugin for Arches</li>
+					<li>Bulk Data Manager, tile and branch excel imports</li>
+					<li>New permissions framework, groups and sets</li>
+					<br>
+				</ul>
+			</section>
 			<section>
 				<h4 style="color:lightgreen;font-weight:bold">Arches User Documentation</h4>
 			</section>
@@ -470,7 +621,7 @@ resourceinstanceid;</script>
 			showSlideNumber: 'all',
 			center: true,
 			maxHeight: 700,   // Maximum height for slides
-		
+
 
 
 			// Learn about plugins: https://revealjs.com/plugins/
