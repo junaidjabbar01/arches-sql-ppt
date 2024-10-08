@@ -38,7 +38,7 @@
 					<br>
 					<li>Collaborative research output with development and training programmes</li>
 					<br>
-					<li>Started with Arches v5.1, currently on v7.5.0, upgrading to v7.6.0</li>
+					<li>Started with Arches v5.1, currently on v7.5.0, upgrading to v7.6</li>
 				</ul>
 			</section>
 
@@ -55,16 +55,7 @@
 			</section>
 
 
-			<section>
-				<h4 style="color:lightgreen;font-weight:bold">Challenges</h4>
-				<ul style="text-align: left;font-size:50%">
-					<li>Collaborative working in a GIS environment with multiple reference layers to compare attributes
-						and location to collate data</li>
-					<br>
-					<img src="img/qgis_form.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=80%
-						height=80%>
-				</ul>
-			</section>
+		
 
 			<section>
 				<h4 style="color:lightgreen;font-weight:bold">Challenges</h4>
@@ -77,12 +68,23 @@
 			</section>
 
 			<section>
+				<h4 style="color:lightgreen;font-weight:bold">Challenges</h4>
+				<ul style="text-align: left;font-size:50%">
+					<li>Collaborative working in a GIS environment with multiple reference layers to compare attributes
+						and location to collate data</li>
+					<br>
+					<img src="img/qgis_form.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=80%
+						height=80%>
+				</ul>
+			</section>
+
+			<section>
 				<h4 style="color:lightgreen;font-weight:bold">Nested Data Import Options</h4>
 				<br>
 				<ul style="text-align: left;font-size:50%">
 					<li>JSON Import - primarily intended for transferring business data between arches instances.</li>
 					<br>
-					<li>SQL Import (v7) - much more flexible and faster than csv data import. Especially useful to
+					<li>SQL Import - much more flexible and faster than csv data import. Especially useful to
 						migrate data from a SQL database into Arches.</li>
 				</ul>
 			</section>
@@ -274,7 +276,7 @@ FROM
 )
 SELECT 
 	uuid_generate_v4(), 
-	jsonb_build_object('url', external_reference, 'url_label', 'External Source'),
+	jsonb_build_object('url', external_reference, 'url_label', 'View External Source'),
 	resourceinstanceid
 FROM
 	ft_hl_external_source;
@@ -339,7 +341,6 @@ FROM ft_hl_name;
 
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Function for Concept-list</h4>
-				<li style="text-align: left;font-size:50%">Create schema for a particular resource model</li>
 
 				<pre>
 						<code data-line-numbers class="language-sql" data-line-numbers="1-8|9-12|13-29" style="font-size:90%;">
@@ -409,9 +410,8 @@ LANGUAGE 'plpgsql' ;</script>
 
 				<pre>
 
-						<code data-line-numbers class="language-sql" style="font-size:85%;">
-							<script type="text/template">select assessment_type,
-__arches_get_uuids_concept_list ('heritage_location','assessment_activity','assessment_type',
+						<code data-line-numbers class="language-sql" style="font-size:90%;">
+							<script type="text/template">select __arches_get_uuids_concept_list ('heritage_location','assessment_activity','assessment_type',
 '''' || replace(replace(replace(assessment_type,'{',''),'}',''),'"','')::text ||'''')
 from ft_hl_assessment_activity;</script>
 						</code>
@@ -419,19 +419,34 @@ from ft_hl_assessment_activity;</script>
 				<li style="text-align: left;font-size:50%">Input</li>
 
 				<pre>
-						<code class="language-sql"  style="font-size:85%;">
+						<code class="language-sql"  style="font-size:90%;">
 							<script type="text/template">{"Data Cleaning/Enhancing","Imagery Interpretation"}</script>
 						</code>
 					</pre>
 				<li style="text-align: left;font-size:50%">Output</li>
 
 				<pre>
-						<code class="language-sql" style="font-size:85%;">
+						<code class="language-sql" style="font-size:90%;">
 							<script type="text/template">{56753655-3780-4dea-98b2-c33b9eb1139a,8c295c0f-dc55-410a-a11b-b72b204852e7}</script>
 						</code>
 					</pre>
 			</section>
 
+			<section data-auto-animate>
+				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance</h4>
+				<pre>
+						<code style="width: 600px; margin: 0 auto; display: block; font-size: 90%;">
+							<script type="text/template">[
+	{
+		"resourceId":"05176558-762e-4ec7-844d-d98af58cc203",
+		"ontologyProperty":"P34i_was_assessed_by",
+		"resourceXresourceId":"",
+		"inverseOntologyProperty":"P34_concerned"
+	}
+]</script>
+						</code>
+					</pre>
+			</section>
 
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance</h4>
@@ -441,9 +456,9 @@ from ft_hl_assessment_activity;</script>
 WITH po_ids (valueid, value) AS (
 	SELECT 
 		resourceinstanceid, 
-		mahsa_id->'en'->>'value' 
+		legacyid 
 	FROM 
-		person_organization.mahsa_id
+		person_organization.instances
 )
 INSERT INTO heritage_location.assessment_activity (
 	tileid,
@@ -471,16 +486,29 @@ FROM
 						</code>
 					</pre>
 			</section>
+		
 			<section data-auto-animate>
-				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance</h4>
+				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance List</h4>
 				<pre>
 						<code style="width: 600px; margin: 0 auto; display: block; font-size: 90%;">
 							<script type="text/template">[
 	{
-		"resourceId":"05176558-762e-4ec7-844d-d98af58cc203",
-		"ontologyProperty":"P34i_was_assessed_by",
+		"resourceId":"b70f2743-ac72-4c60-91e6-071ca4582717",
+		"ontologyProperty":"P70i_is_documented_in",
 		"resourceXresourceId":"",
-		"inverseOntologyProperty":"P34_concerned"
+		"inverseOntologyProperty":"P70_documents"
+	},
+	{
+		"resourceId":"9a6441ae-e2e6-453d-a073-5095c052d214",
+		"ontologyProperty":"P70i_is_documented_in",
+		"resourceXresourceId":"",
+		"inverseOntologyProperty":"P70_documents"
+	},
+	{
+		"resourceId":"341836a2-9f49-4603-8894-3c215c8f4108",
+		"ontologyProperty":"P70i_is_documented_in",
+		"resourceXresourceId":"",
+		"inverseOntologyProperty":"P70_documents"
 	}
 ]</script>
 						</code>
@@ -494,15 +522,15 @@ FROM
 							<script type="text/template">WITH related_ids AS (
 SELECT 
 	resourceinstanceid, 
-	mahsa_id->'en'->>'value' AS value 
+	legacyid
 FROM 
-	historic_maps.mahsa_id
+	historic_maps.instances
 UNION
 SELECT 
 	resourceinstanceid, 
-	mahsa_id->'en'->>'value' AS value 
+	legacyid
 FROM 
-	information_resource_model.mahsa_id
+	information_resource_model.instances
 ),
 related_resources AS (
 SELECT
@@ -537,38 +565,101 @@ GROUP BY
 					</pre>
 			</section>
 
+		
 			<section data-auto-animate>
-				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance List</h4>
+				<h4 style="color:lightgreen;font-weight:bold">Import Nested Data - Condition Assessment</h4>
 				<pre>
-						<code style="width: 600px; margin: 0 auto; display: block; font-size: 90%;">
-							<script type="text/template">[
-	{
-		"resourceId":"b70f2743-ac72-4c60-91e6-071ca4582717",
-		"ontologyProperty":"P70i_is_documented_in",
-		"resourceXresourceId":"",
-		"inverseOntologyProperty":"P70_documents"
-	},
-	{
-		"resourceId":"9a6441ae-e2e6-453d-a073-5095c052d214",
-		"ontologyProperty":"P70i_is_documented_in",
-		"resourceXresourceId":"",
-		"inverseOntologyProperty":"P70_documents"
-	},
-	{
-		"resourceId":"341836a2-9f49-4603-8894-3c215c8f4108",
-		"ontologyProperty":"P70i_is_documented_in",
-		"resourceXresourceId":"",
-		"inverseOntologyProperty":"P70_documents"
-	}
-]</script>
+						<code data-line-numbers style="width: 800px; margin: 0 auto; display: block; font-size: 90%;">
+							<script type="text/template">WITH overall_condition (valueid, value) AS
+(SELECT valueid, value
+	FROM __arches_get_labels_for_concept_node(
+		__arches_get_node_id_for_view_column(
+			'heritage_location',
+			'condition_assessment',
+			'overall_condition'
+		)
+	)
+)
+INSERT INTO heritage_location.condition_assessment (
+	tileid,
+	overall_condition,
+	resourceinstanceid
+)
+(SELECT
+	ca_parent_tileid,
+	(
+		SELECT valueid
+		FROM overall_condition
+		WHERE value = overall_condition
+		LIMIT 1
+	),
+	resourceinstanceid
+	FROM ft_hl_condition_assessment
+);</script>
 						</code>
 					</pre>
+			</section>
+
+			<section data-auto-animate>
+				<h4 style="color:lightgreen;font-weight:bold">Import Nested Data - Condition Assessment</h4>
+				<pre>
+						<code data-line-numbers style="width: 900px; margin: 0 auto; display: block; font-size: 90%;">
+							<script type="text/template">WITH condition_recommendation_description_type (valueid, value) AS (
+SELECT valueid, value
+	FROM __arches_get_labels_for_concept_node(
+		__arches_get_node_id_for_view_column(
+			'heritage_location',
+			'condition_recommendation_description_assignment',
+			'condition_recommendation_description_type'
+		)
+	)
+)
+INSERT INTO heritage_location.condition_recommendation_description_assignment (
+	tileid,
+	condition_recommendation_description_type,
+	condition_recommendation_description,
+	resourceinstanceid,
+	condition_assessment
+)
+(
+	SELECT
+		uuid_generate_v4(),
+		(
+			SELECT valueid
+			FROM condition_recommendation_description_type
+			WHERE value = condition_recommendation_description_type
+			LIMIT 1
+		),
+		build_lang_json(condition_recommendation_description, 'en'),
+		resourceinstanceid,
+		ca_parent_tileid
+	FROM ft_hl_condition_recommendation_description
+);</script>
+						</code>
+					</pre>
+			</section>
+			
+			<section>
+				<h4 style="color:lightgreen;font-weight:bold">Sample Imported Data</h4>
+				<ul style="text-align: left;font-size:50%">
+					<img src="img/arches_database.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=100%
+						height=100%>
+				</ul>
+			</section>
+
+						
+			<section>
+				<h4 style="color:lightgreen;font-weight:bold">Sample Imported Data</h4>
+				<ul style="text-align: left;font-size:50%">
+					<img src="img/arches_database_2.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=100%
+						height=100%>
+				</ul>
 			</section>
 
 			<section>
 				<h4 style="color:lightgreen;font-weight:bold">Sample Imported Data</h4>
 				<ul style="text-align: left;font-size:50%">
-					<img src="img/arches_database.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=100%
+					<img src="img/arches_database_3.png" style="display: block; margin: 0 auto;" alt="Centered Image" width=100%
 						height=100%>
 				</ul>
 			</section>
