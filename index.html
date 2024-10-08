@@ -247,7 +247,7 @@ $$ LANGUAGE plpgsql;</script>
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold;">Import Strings</h4>
 				<pre>
-						<code data-line-numbers style="width: 700px; margin: 0 auto; display: block; font-size: 90%;">  
+						<code data-line-numbers style="width: 720px; margin: 0 auto; display: block; font-size: 90%;">  
 							<script type="text/template">-- insert data for name branch in heritage location resource model
 INSERT INTO heritage_location.name (
 	tileid,
@@ -267,8 +267,9 @@ FROM
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import URL</h4>
 				<pre>
-						<code data-line-numbers style="width: 960px; margin: 0 auto; display: block;">
-							<script type="text/template">INSERT INTO heritage_location.external_source(
+						<code data-line-numbers style="width: 960px; margin: 0 auto; display: block;  font-size: 90%;">
+							<script type="text/template"> -- insert external reference for external source branch
+INSERT INTO heritage_location.external_source(
 (
 	tileid,
 	external_reference,
@@ -284,6 +285,53 @@ FROM
 </code>
 </pre>
 			</section>
+			<section>
+				<h4 style="color:lightgreen;font-weight:bold">Import Concepts</h4>
+				<pre>
+					<code data-line-numbers style="width: 500px; margin: 0 auto; display: block;  font-size: 90%;">
+						<script type="text/template">SELECT valueid, value
+FROM __arches_get_labels_for_concept_node(
+	__arches_get_node_id_for_view_column(
+		'heritage_location', --schema_name
+		'name', --view_name
+		'name_type' --column_name
+	)
+)
+</script>
+</code>
+</pre>
+
+
+
+				<table style="width: 50%; border-collapse: collapse; text-align: left; font-size: 0.4em; margin: auto;">
+				  <thead>
+					<tr>
+					  <th style="border: 1px solid #ddd; padding: 4px;">valueid</th>
+					  <th style="border: 1px solid #ddd; padding: 4px;">value</th>
+					</tr>
+				  </thead>
+				  <tbody>
+					<tr>
+					  <td style="border: 1px solid #ddd; padding: 4px;">60e5e6bd-553c-4928-8cf6-c86c96f982a4</td>
+					  <td style="border: 1px solid #ddd; padding: 4px;">Alternate Name(s)</td>
+					</tr>
+					<tr>
+					  <td style="border: 1px solid #ddd; padding: 4px;">e42c8f5c-1533-412b-bd74-1ad7c4c5d526</td>
+					  <td style="border: 1px solid #ddd; padding: 4px;">Primary Name</td>
+					</tr>
+					<tr>
+					  <td style="border: 1px solid #ddd; padding: 4px;">bf229f6b-f958-4413-9a81-d113eb368206</td>
+					  <td style="border: 1px solid #ddd; padding: 4px;">Survey/Reference ID</td>
+					</tr>
+					<tr>
+					  <td style="border: 1px solid #ddd; padding: 4px;">33216af5-1821-4662-8589-4b9ec181e0aa</td>
+					  <td style="border: 1px solid #ddd; padding: 4px;">Village Name</td>
+					</tr>
+				  </tbody>
+				</table>
+			  </section>
+			  
+			  
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Concepts</h4>
 				<pre>
@@ -301,8 +349,8 @@ WITH name_type (valueid, value) AS (
 ) 
 INSERT INTO heritage_location.name (
 	tileid,
-	name_type,
 	name,
+	name_type,
 	resourceinstanceid
 )
 SELECT 
@@ -312,7 +360,6 @@ SELECT
 		SELECT valueid
 		FROM name_type
 		WHERE value = name_type
-		LIMIT 1
 	),
 	resourceinstanceid 
 FROM ft_hl_name;
@@ -348,53 +395,49 @@ FROM ft_hl_name;
 	schema_name text,
 	view_name text,
 	column_name text,
-	data_column_name text
+	concept_list_data text
 ) 
 RETURNS uuid[] 
 AS $BODY$
 DECLARE
-	concept varchar;
-	concept_list varchar[];
+	concept text;
+	concept_list text[];
 	concept_uuid text;
 	concept_list_uuids text[];
 BEGIN
-	-- Extract the list of concepts from the data column
+	-- Get the list of concepts
 EXECUTE FORMAT(
-	'SELECT array_agg(trim(e)) 
+	'SELECT array_agg(term) 
 		FROM (
 			SELECT row_number() OVER () AS rn, 
-	unnest(string_to_array( '|| data_column_name || ' , '','')::text[]) e) t ',
-	data_column_name
+	unnest(string_to_array( '|| concept_list_data || ',',','')::text[]) term) t '
 ) INTO concept_list;
 
-	-- Process each concept if the concept list is not empty
-	IF (array_length(concept_list, 1) > 0) THEN
-		FOREACH concept IN ARRAY concept_list
-		LOOP
-			RAISE NOTICE 'Processing concept: %', concept;
+-- Loop through the all concepts
+	FOREACH concept IN ARRAY concept_list
+	LOOP
+		RAISE NOTICE 'Processing concept: %', concept;
 
-			-- Retrieve the UUID for each concept
-			EXECUTE FORMAT(
-				'WITH concept_value (valueid, value) AS (
-					SELECT valueid, value 
-					FROM __arches_get_labels_for_concept_node(
-						__arches_get_node_id_for_view_column(
-							%L, %L, %L
-						)
+		-- Retrieve the UUID for each concept
+		EXECUTE FORMAT(
+			'WITH concept_value (valueid, value) AS (
+				SELECT valueid, value 
+				FROM __arches_get_labels_for_concept_node(
+					__arches_get_node_id_for_view_column(
+						%L, %L, %L
 					)
 				)
-				SELECT valueid::text 
-				FROM concept_value 
-				WHERE value = trim(%L) 
-				LIMIT 1',
-				schema_name, view_name, column_name, concept
-			) INTO concept_uuid;
+			)
+			SELECT valueid::text 
+			FROM concept_value 
+			WHERE value = %L',
+			schema_name, view_name, column_name, concept
+		) INTO concept_uuid;
 
-			-- Append the UUID to the list
-			concept_list_uuids := array_append(concept_list_uuids::text[], concept_uuid::text);
-		END LOOP;
-	END IF;
-
+		-- Append the UUID to the list
+		concept_list_uuids := array_append(concept_list_uuids::text[], concept_uuid::text);
+	END LOOP;
+	
 	RETURN concept_list_uuids;
 END
 $BODY$
@@ -406,27 +449,17 @@ LANGUAGE 'plpgsql' ;</script>
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Concept-list</h4>
 				<br>
-				<li style="text-align: left;font-size:50%">Select Query</li>
 
 				<pre>
 
-						<code data-line-numbers class="language-sql" style="font-size:90%;">
-							<script type="text/template">select __arches_get_uuids_concept_list ('heritage_location','assessment_activity','assessment_type',
-'''' || replace(replace(replace(assessment_type,'{',''),'}',''),'"','')::text ||'''')
+						<code data-line-numbers class="language-sql" style="font-size:100%;">
+							<script type="text/template">select __arches_get_uuids_concept_list 
+('heritage_location','assessment_activity','assessment_type',assessment_type)
 from ft_hl_assessment_activity;</script>
 						</code>
 					</pre>
-				<li style="text-align: left;font-size:50%">Input</li>
-
 				<pre>
-						<code class="language-sql"  style="font-size:90%;">
-							<script type="text/template">{"Data Cleaning/Enhancing","Imagery Interpretation"}</script>
-						</code>
-					</pre>
-				<li style="text-align: left;font-size:50%">Output</li>
-
-				<pre>
-						<code class="language-sql" style="font-size:90%;">
+						<code class="language-sql" style="font-size:100%;">
 							<script type="text/template">{56753655-3780-4dea-98b2-c33b9eb1139a,8c295c0f-dc55-410a-a11b-b72b204852e7}</script>
 						</code>
 					</pre>
@@ -453,6 +486,7 @@ from ft_hl_assessment_activity;</script>
 				<pre>
 						<code data-line-numbers="1-8|9-12|13-30" style="font-size:90%;">
 							<script type="text/template">-- Inserting resource relations between heritage_location and person/organisation resource model
+-- Get resourceinstanceid and mahsa_id
 WITH po_ids (valueid, value) AS (
 	SELECT 
 		resourceinstanceid, 
@@ -472,7 +506,6 @@ SELECT
 				SELECT valueid
 				FROM po_ids
 				WHERE value = assessor_id
-				LIMIT 1
 			),
 			'ontologyProperty', assessor_forward_ontology,
 			'resourceXresourceId', '',
@@ -518,8 +551,9 @@ FROM
 			<section data-auto-animate>
 				<h4 style="color:lightgreen;font-weight:bold">Import Resource Instance List</h4>
 				<pre>
-						<code data-line-numbers="1-13|14-29|30-34|35-42" style="font-size: 90%;">
-							<script type="text/template">WITH related_ids AS (
+						<code data-line-numbers="1-14|15-30|31-35|36-43" style="font-size: 90%;">
+							<script type="text/template">-- Get resourceinstanceid and mahsa_id
+WITH related_ids AS (
 SELECT 
 	resourceinstanceid, 
 	legacyid
@@ -591,7 +625,6 @@ INSERT INTO heritage_location.condition_assessment (
 		SELECT valueid
 		FROM overall_condition
 		WHERE value = overall_condition
-		LIMIT 1
 	),
 	resourceinstanceid
 	FROM ft_hl_condition_assessment
@@ -628,7 +661,6 @@ INSERT INTO heritage_location.condition_recommendation_description_assignment (
 			SELECT valueid
 			FROM condition_recommendation_description_type
 			WHERE value = condition_recommendation_description_type
-			LIMIT 1
 		),
 		build_lang_json(condition_recommendation_description, 'en'),
 		resourceinstanceid,
@@ -638,7 +670,48 @@ INSERT INTO heritage_location.condition_recommendation_description_assignment (
 						</code>
 					</pre>
 			</section>
+
+
+
 			
+			<section data-auto-animate>
+				<h4 style="color:lightgreen;font-weight:bold">Import Geometries</h4>
+				<pre>
+						<code data-line-numbers style="width: 900px; margin: 0 auto; display: block; font-size: 90%;">
+							<script type="text/template">WITH geometry_qualifier (valueid, value) AS (
+SELECT valueid, value
+	FROM __arches_get_labels_for_concept_node(
+		__arches_get_node_id_for_view_column(
+			'heritage_location',
+			'geographic_location',
+			'geometry_qualifier'
+		)
+	)
+)
+INSERT INTO heritage_location.geographic_location (
+	tileid,
+	geometry_qualifier,
+	spatial_coordinates_geometry,
+	resourceinstanceid
+)
+SELECT 
+	uuid_generate_v4(),
+	(
+		SELECT valueid
+		FROM geometry_qualifier
+		WHERE value = geometry_qualifier
+	),
+	geom,
+	resourceinstanceid
+FROM ft_hl_geographic_location_point;
+
+SELECT * FROM refresh_geojson_geometries();
+							</script>
+						</code>
+					</pre>
+			</section>
+
+
 			<section>
 				<h4 style="color:lightgreen;font-weight:bold">Sample Imported Data</h4>
 				<ul style="text-align: left;font-size:50%">
