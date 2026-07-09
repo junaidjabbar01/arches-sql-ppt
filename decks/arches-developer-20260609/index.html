@@ -13,6 +13,28 @@
 
 	<!-- Theme used for syntax highlighted code -->
 	<link rel="stylesheet" href="../../reveal/plugin/highlight/monokai.css">
+
+  
+
+  <style>
+
+  @media print {
+  html,
+  body,
+  .reveal,
+  .slides,
+  .pdf-page {
+    background: #000 !important;
+    color: white !important;
+  }
+
+  .reveal section {
+    background: #000 !important;
+  }
+
+  }
+  </style>
+
 </head>
 
 <body>
@@ -548,20 +570,16 @@ class SampleIndex(BaseIndex):
 		// More info about initialization & config:
 		// - https://revealjs.com/initialization/
 		// - https://revealjs.com/config/
-		Reveal.initialize({
-			hash: true,
+Reveal.initialize({
+    hash: true,
 
-			margin: -0.2,
-			slideNumber: true,
-			showSlideNumber: 'all',
-			center: true,
-			maxHeight: 700,   // Maximum height for slides
+    margin: 0.04,
+    slideNumber: true,
+    showSlideNumber: 'all',
+    center: true,
 
-
-
-			// Learn about plugins: https://revealjs.com/plugins/
-			plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
-		});
+    plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+});
 	</script>
 </body>
 
